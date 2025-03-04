@@ -14,7 +14,8 @@ enum class equip {
     hemlet
 };
 
-struct player_ {
+struct player_ 
+{
 
     vector<equip> hero_items = {};
     int count_horse;
@@ -30,17 +31,44 @@ struct player_ {
 
     }
 
-    void dropItem(equip itemID)
-    {
+    void dropItem(equip itemID) {
+        auto it = find(hero_items.begin(), hero_items.end(), itemID);
+        if (it != hero_items.end()) {
+            hero_items.erase(it);
+            cout << "Item dropped: " << static_cast<int>(itemID) << "\n";
+        }
+        else {
+            cout << "Item not found in inventory.\n";
+        }
+    }
 
+    void printInventory() const 
+    {
+        if (hero_items.empty()) {
+            cout << "Your inventory is empty.\n";
+            return;
+        }
+
+        cout << "Your inventory:\n";
+        for (const auto& item : hero_items) {
+            switch (item) {
+            case equip::sword:
+                cout << "- Sword\n";
+                break;
+            case equip::axe:
+                cout << "- Axe\n";
+                break;
+            case equip::hemlet:
+                cout << "- Hemlet\n";
+                break;
+            default:
+                cout << "- Unknown item\n";
+                break;
+            }
+        }
     }
 };
-
-
-  
-
  
-
 player_ player;
 
 
@@ -50,8 +78,8 @@ void initGame()
     location = 0;
     weapon = 0;
     silverkey = 0;
-    player.Init();
-}
+   player.Init();
+} 
 
 
 
@@ -117,11 +145,12 @@ void robbersLocation()
         }
     }
 }
-void swordLocation()
+void swordLocation() 
 {
     if (weapon == 0)
     {
         cout << "You found a sword";
+        player.hero_items.push_back(equip::sword);
         weapon++;
     }
     else
@@ -138,6 +167,7 @@ void villageLife()
     else
     {
         cout << "The road has brought you to a village called Life";
+        player.printInventory();
     }
 }
 
@@ -147,7 +177,7 @@ int main()
 {
      
      initGame();
-    while (true)
+    while (player.life > 0)
     {
         (*functptr[location])(); 
 
@@ -162,6 +192,8 @@ int main()
             else
             {
                 cout << "Room is out of range 0-3";
+                continue;
+                
             }
         }
         else
@@ -171,4 +203,5 @@ int main()
 
 
     }
+    cout << "Game over";
 }
