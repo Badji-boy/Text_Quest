@@ -2,7 +2,7 @@
 #include <vector>
 using namespace std;
 
-int location = 0;
+int currentLocation = 0;
 
 int weapon = 0;
 int silverkey = 0;
@@ -13,6 +13,47 @@ enum class equip {
     axe,
     hemlet
 };
+
+string getIDString(equip itemID)
+{
+    switch (itemID) {
+    case equip::sword:
+        return "- Sword\n";
+        break;
+    case equip::axe:
+        return "- Axe\n";
+        break;
+    case equip::hemlet:
+        return "- Hemlet\n";
+        break;
+    default:
+        return "- Unknown item\n";
+        break;
+    }
+    return NULL;
+}
+
+struct Location_
+{
+    vector<equip> location_items = {};
+    void printInventory()
+    {
+        if (location_items.empty()) {
+            cout << "Location inventory is empty.\n";
+            return;
+        }
+
+        cout << "Location inventory:\n";
+
+        for (int i = 0; i < location_items.size(); i++) {
+            auto s = getIDString(location_items[i]);
+            cout << s.c_str();
+        }
+    }
+
+};
+
+Location_ location[3];
 
 struct player_ 
 {
@@ -34,6 +75,7 @@ struct player_
     void dropItem(equip itemID) {
         auto it = find(hero_items.begin(), hero_items.end(), itemID);
         if (it != hero_items.end()) {
+            location[currentLocation].location_items.push_back(*it);
             hero_items.erase(it);
             cout << "Item dropped: " << static_cast<int>(itemID) << "\n";
         }
@@ -41,8 +83,20 @@ struct player_
             cout << "Item not found in inventory.\n";
         }
     }
+    void pickItem(equip itemID)
+    {
+        auto it = find(location[currentLocation].location_items.begin(), location[currentLocation].location_items.end(), itemID);
+        if (it != location[currentLocation].location_items.end()) {
+            hero_items.push_back(itemID);
+            location[currentLocation].location_items.erase(it);
+            cout << "Item dropped: " << static_cast<int>(itemID) << "\n";
+        }
+        else {
+            cout << "Item not found in inventory.\n";
+        }
+    }
 
-    void printInventory() const 
+    void printInventory()  
     {
         if (hero_items.empty()) {
             cout << "Your inventory is empty.\n";
@@ -50,32 +104,21 @@ struct player_
         }
 
         cout << "Your inventory:\n";
-        for (const auto& item : hero_items) {
-            switch (item) {
-            case equip::sword:
-                cout << "- Sword\n";
-                break;
-            case equip::axe:
-                cout << "- Axe\n";
-                break;
-            case equip::hemlet:
-                cout << "- Hemlet\n";
-                break;
-            default:
-                cout << "- Unknown item\n";
-                break;
-            }
+
+        for (int i = 0; i < hero_items.size(); i++) {
+            auto s = getIDString(hero_items[i]);
+            cout << s.c_str();
         }
     }
 };
- 
+
 player_ player;
 
 
 void initGame()
 {
-    
-    location = 0;
+    //auto s = player.getIDString(equip::axe);
+    currentLocation = 0;
     weapon = 0;
     silverkey = 0;
    player.Init();
@@ -128,7 +171,7 @@ void robbersLocation()
 
         case 1:
             forceLocation = true;
-            location = 0;
+            currentLocation = 0;
             break;
         case 2:
             cout << "You're dead.";
@@ -138,7 +181,7 @@ void robbersLocation()
         case 3:
             cout << "You defeat the bandits and get the silver key.";
             silverkey++;
-            location = 0;
+            currentLocation = 0;
             forceLocation = true;
             break;
 
@@ -177,7 +220,17 @@ int main()
 {
      
      initGame();
-    while (player.life > 0)
+     
+     
+     while (true)
+     {
+         player.printInventory();
+         player.dropItem(equip::axe);
+         location[currentLocation].printInventory();
+         player.pickItem(equip::axe);
+         player.printInventory();
+     }
+    /*while (player.life > 0)
     {
         (*functptr[location])(); 
 
@@ -202,6 +255,6 @@ int main()
         }
 
 
-    }
+    }*/
     cout << "Game over";
 }
