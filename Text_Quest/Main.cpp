@@ -2,32 +2,30 @@
 #include <vector>
 using namespace std;
 
-int currentLocation = 0;
-
-int weapon = 0;
-int silverkey = 0;
-bool forceLocation = false;
+int currentLocation;
+int silverkey;
+string inp = {};
 
 enum class equip {
     sword,
     axe,
-    hemlet
+    helmet
 };
 
 string getIDString(equip itemID)
 {
     switch (itemID) {
     case equip::sword:
-        return "- Sword\n";
+        return "sword";
         break;
     case equip::axe:
-        return "- Axe\n";
+        return "axe";
         break;
-    case equip::hemlet:
-        return "- Hemlet\n";
+    case equip::helmet:
+        return "helmet";
         break;
     default:
-        return "- Unknown item\n";
+        return "Unknown item\n";
         break;
     }
     return NULL;
@@ -47,13 +45,13 @@ struct Location_
 
         for (int i = 0; i < location_items.size(); i++) {
             auto s = getIDString(location_items[i]);
-            cout << s.c_str();
+            cout << "- " << s.c_str() << "\n";
         }
     }
 
 };
 
-Location_ location[3];
+Location_ location[5];
 
 struct player_ 
 {
@@ -66,10 +64,6 @@ struct player_
     {
         count_horse = 1;
         life = 1;
-
-        hero_items.push_back(equip::axe);
-        hero_items.push_back(equip::hemlet);
-
     }
 
     void dropItem(equip itemID) {
@@ -77,7 +71,7 @@ struct player_
         if (it != hero_items.end()) {
             location[currentLocation].location_items.push_back(*it);
             hero_items.erase(it);
-            cout << "Item dropped: " << static_cast<int>(itemID) << "\n";
+            cout << "Item dropped: " << getIDString(itemID) << "\n";
         }
         else {
             cout << "Item not found in inventory.\n";
@@ -89,10 +83,10 @@ struct player_
         if (it != location[currentLocation].location_items.end()) {
             hero_items.push_back(itemID);
             location[currentLocation].location_items.erase(it);
-            cout << "Item dropped: " << static_cast<int>(itemID) << "\n";
+            cout << "Item picked: " << getIDString(itemID) << "\n";
         }
         else {
-            cout << "Item not found in inventory.\n";
+            cout << "Item not found in location.\n";
         }
     }
 
@@ -107,110 +101,139 @@ struct player_
 
         for (int i = 0; i < hero_items.size(); i++) {
             auto s = getIDString(hero_items[i]);
-            cout << s.c_str();
+            cout << "- " << s.c_str() << "\n";
         }
     }
 };
 
 player_ player;
 
+void playerinput()
+{
+    cin >> inp;
+    for (auto item : location[currentLocation].location_items) {
+        if (inp == getIDString(item)) {
+            player.pickItem(item);
+            return;
+        }
+    }
+
+   
+
+    if (inp == "i")
+    {
+        player.printInventory();
+    }
+    else if (inp == "2")
+    {
+        currentLocation++;
+    }
+    else if (inp == "1")
+    {
+        currentLocation--;
+    }
+    else
+    {
+        cout << "Input wrong, try again\n";
+    }
+}
+
 
 void initGame()
 {
-    //auto s = player.getIDString(equip::axe);
     currentLocation = 0;
-    weapon = 0;
     silverkey = 0;
+    location[0].location_items.push_back(equip::helmet);
+    location[3].location_items.push_back(equip::sword);
    player.Init();
 } 
 
 
 
-void startLocation()
+void startLocation()  //location 0
 {
-    cout << "Hello traveler, choose one of 4 doors";
+    cout << "You are in the starting location. Select an action\n";
+    cout << "2.Go forward\n";
+    cout << "i.Inventory\n";
+    cout << "Write down the name of the item to pick it up\n";
+    location[currentLocation].printInventory();
+    playerinput();
 }
 
-void horseLocation()
+void horseLocation()   //location 1
 {
     if (player.count_horse > 0)
     {
-        cout << "You lost a horse";
+        cout << "You lost a horse\n";
         player.count_horse--;
-        cout << "  A horse:" << player.count_horse;
+        cout << "  A horse:" << player.count_horse << "\n";
+        cout << "1.Go back\n";
+        cout << "2.Go forward\n";
+        cout << "i.Inventory\n";
+        cout << "Write down the name of the item to pick it up\n";
+        location[currentLocation].printInventory();
+        playerinput();
     }
     else
     {
-        cout << "You see a dead horse";
+        cout << "You see a dead horse\n";
+        cout << "1.Go back\n";
+        cout << "2.Go forward\n";
+        cout << "i.Inventory\n";
+        cout << "Write down the name of the item to pick it up\n";
+        location[currentLocation].printInventory();
+        playerinput();
     }
 }
 
-void robbersLocation()
+void robbersLocation() //location 2
 {
+    cout << "You met robbers. Select an action\n";
+    cout << "1.Go back\n";
+    cout << "2.Go forward\n";
+    cout << "i.Inventory\n";
+    cout << "Write down the name of the item to pick it up\n";
+    for (auto item : player.hero_items)
+    {
+        if (getIDString(item) == "sword")
+        {
+            cout << "You defeat the bandits and get the silver key. You can take the axe from their leader.\n";
+            location[currentLocation].location_items.push_back(equip::axe);
+            silverkey++;
+            location[currentLocation].printInventory();
+            playerinput();
+        }
+    }
+    location[currentLocation].printInventory();
+    playerinput();
+}
+void swordLocation() //location 3
+{
+    cout << "Bandits have clearly been here, you can see a broken wagon, and in the distance you can see a huge fence and a door. Select an action\n";
+    cout << "1.Go back\n";
+    cout << "2.Go forward\n";
+    cout << "i.Inventory\n";
+    cout << "Write down the name of the item to pick it up\n";
     if (silverkey == 1)
     {
-        cout << "You see the dead robbers";
+        cout << "You managed to open the door with a key.\n";
     }
-    else
-    {
-        int chooserobloc;
-        cout << "You met robbers";
-        if (weapon == 0)
-        {
-            cout << "1. run away  2. fight ";
-            cin >> chooserobloc;
-        }
-        else
-        {
-            cout << "1. run away  2. fight 3. get a weapon and fight";
-            cin >> chooserobloc;
-        }
-
-        switch (chooserobloc)
-        {
-
-        case 1:
-            forceLocation = true;
-            currentLocation = 0;
-            break;
-        case 2:
-            cout << "You're dead.";
-            initGame();
-            forceLocation = true;
-            break;
-        case 3:
-            cout << "You defeat the bandits and get the silver key.";
-            silverkey++;
-            currentLocation = 0;
-            forceLocation = true;
-            break;
-
-        }
-    }
+    location[currentLocation].printInventory();
+    playerinput();
+    
 }
-void swordLocation() 
-{
-    if (weapon == 0)
-    {
-        cout << "You found a sword";
-        player.hero_items.push_back(equip::sword);
-        weapon++;
-    }
-    else
-    {
-        cout << "Do you see an empty room";
-    }
-}
-void villageLife()
+void villageLife() //location 4
 {
     if (silverkey == 0)
     {
-        cout << "closed";
+        cout << "closed\n";
+        currentLocation--;
     }
     else
     {
-        cout << "The road has brought you to a village called Life";
-        player.printInventory();
+        cout << "The road has brought you to a village called Life\n";
+        location[currentLocation].printInventory();
+        playerinput();
     }
 }
 
@@ -220,41 +243,20 @@ int main()
 {
      
      initGame();
+         
      
-     
-     while (true)
+     while (player.life > 0)
      {
-         player.printInventory();
-         player.dropItem(equip::axe);
-         location[currentLocation].printInventory();
-         player.pickItem(equip::axe);
-         player.printInventory();
+         if (currentLocation >= 0)
+         {
+             (*functptr[currentLocation])();
+         }
+         else
+         {
+             currentLocation = 0;
+             continue;
+         }
      }
-    /*while (player.life > 0)
-    {
-        (*functptr[location])(); 
 
-        if (!forceLocation)
-        {
-            int inp;
-            cin >> inp;
-            if (inp >= 0 && inp <= 4)
-            {
-                location = inp;
-            }
-            else
-            {
-                cout << "Room is out of range 0-3";
-                continue;
-                
-            }
-        }
-        else
-        {
-            forceLocation = false;
-        }
-
-
-    }*/
-    cout << "Game over";
+    cout << "Game over\n";
 }
